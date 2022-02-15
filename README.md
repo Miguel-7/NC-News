@@ -1,4 +1,1 @@
 # NC News
-
-Hello
-
