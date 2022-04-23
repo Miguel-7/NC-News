@@ -1,5 +1,9 @@
 const express = require("express");
-const { getTopics, getArticleById } = require("./controllers/controllers.js");
+const {
+  getTopics,
+  getArticleById,
+  patchArticleById,
+} = require("./controllers/controllers.js");
 const {
   handleCustomErrors,
   handlePsqlErrors,
@@ -13,6 +17,8 @@ app.use(express.json());
 app.get("/api/topics", getTopics);
 
 app.get("/api/articles/:article_id", getArticleById);
+
+app.patch("/api/articles/:article_id", patchArticleById);
 
 app.use(handleCustomErrors);
 app.use(handlePsqlErrors);

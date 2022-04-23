@@ -12,6 +12,7 @@ xdescribe("GET /api/topics", () => {
   test("has status 200", () => {
     return request(app).get("/api/topics").expect(200);
   });
+
   test("status: 200 - responds with an array which has a length of at least 3 topic objects", () => {
     return request(app)
       .get("/api/topics")
@@ -20,6 +21,7 @@ xdescribe("GET /api/topics", () => {
         expect(res.body.topics).toHaveLength(3);
       });
   });
+
   test('status: 200 - responds with an array of topic objects, each having two properties: "slug" and "description"', () => {
     return request(app)
       .get("/api/topics")
@@ -35,6 +37,7 @@ xdescribe("GET /api/topics", () => {
         });
       });
   });
+
   // test('status: 404 - responds with the message: "path not found"', () => {
   //   return (
   //     request(app)
@@ -49,7 +52,7 @@ xdescribe("GET /api/topics", () => {
   // });
 });
 
-describe("GET /api/articles/:article_id", () => {
+xdescribe("GET /api/articles/:article_id", () => {
   test("Status: 200 - get single article object by id - it has at least all these 7 specific properties, including an author that is the username from the users table)", () => {
     const articleId = 9;
     return request(app)
@@ -69,6 +72,7 @@ describe("GET /api/articles/:article_id", () => {
         );
       });
   });
+
   test("Status: 400 - responds with an error message when passed an invalid article ID", () => {
     return request(app)
       .get("/api/articles/notAnID")
@@ -77,9 +81,90 @@ describe("GET /api/articles/:article_id", () => {
         expect(body.msg).toBe("Bad Request: Invalid input");
       });
   });
+
   test("Status: 404 - responds with an error message when passed an article ID in a valid format but that doesn't exist in the database", () => {
     return request(app)
       .get("/api/articles/999999999")
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("No article found for Article ID: 999999999");
+      });
+  });
+});
+
+describe("PATCH /api/articles/:article_id", () => {
+  // Positive votes update
+  const posVotUp = {
+    article_id: 3,
+    title: expect.any(String),
+    topic: expect.any(String),
+    author: expect.any(String),
+    body: expect.any(String),
+    created_at: expect.any(String),
+    votes: 1,
+  };
+
+  // Negative votes update
+  const negVotUp = { ...posVotUp, votes: -100 };
+
+  test("Status: 200 - responds with an article's positive votes update", () => {
+    return request(app)
+      .patch(`/api/articles/3`)
+      .send({ inc_votes: 1 })
+      .expect(200)
+      .then(({ body: { article } }) => {
+        expect(article).toBeInstanceOf(Object);
+        expect(article).toEqual(expect.objectContaining(posVotUp));
+      });
+  });
+
+  test("Status: 200 - responds with an article's negative votes update", () => {
+    return request(app)
+      .patch(`/api/articles/3`)
+      .send({ inc_votes: -100 })
+      .expect(200)
+      .then(({ body: { article } }) => {
+        expect(article).toBeInstanceOf(Object);
+        expect(article).toEqual(expect.objectContaining(negVotUp));
+      });
+  });
+
+  test("Status: 400 - responds with an error message when passed an invalid article ID", () => {
+    return request(app)
+      .patch("/api/articles/notAnID")
+      .send({ inc_votes: 1 })
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad Request: Invalid input");
+      });
+  });
+
+  describe("Status: 400 - responds with an error message when passed an invalid update object", () => {
+    test("400 - request body does not contain an increment votes (inc_votes) property", () => {
+      return request(app)
+        .patch("/api/articles/3")
+        .send({})
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe("Bad Request: Missing 'inc_votes' property");
+        });
+    });
+
+    test("400 - request body contains an invalid inc_votes property value", () => {
+      return request(app)
+        .patch("/api/articles/3")
+        .send({ inc_votes: "Invalid value" })
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe("Bad Request: Invalid input");
+        });
+    });
+  });
+
+  test("Status: 404 - responds with an error message when passed an article ID in a valid format but that doesn't exist in the database", () => {
+    return request(app)
+      .patch("/api/articles/999999999")
+      .send({ inc_votes: 1 })
       .expect(404)
       .then(({ body: { msg } }) => {
         expect(msg).toBe("No article found for Article ID: 999999999");
