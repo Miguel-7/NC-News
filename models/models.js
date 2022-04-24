@@ -42,3 +42,7 @@ exports.updateArticleById = (articleId, incVotes) => {
       return article;
     });
 };
+
+exports.fetchUsers = () => {
+  return db.query("SELECT username FROM users").then(({ rows }) => rows);
+};

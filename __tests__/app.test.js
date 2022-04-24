@@ -37,19 +37,6 @@ xdescribe("GET /api/topics", () => {
         });
       });
   });
-
-  // test('status: 404 - responds with the message: "path not found"', () => {
-  //   return (
-  //     request(app)
-  //       // .get("/*")
-  //       .get("/notARoute")
-  //       .expect(404)
-  //     // .then(res => {
-  //     //   console.log(res.body);
-  //     //   expect(res.body.msg).toBe("Path not found");
-  //     // })
-  //   );
-  // });
 });
 
 xdescribe("GET /api/articles/:article_id", () => {
@@ -92,7 +79,7 @@ xdescribe("GET /api/articles/:article_id", () => {
   });
 });
 
-describe("PATCH /api/articles/:article_id", () => {
+xdescribe("PATCH /api/articles/:article_id", () => {
   // Positive votes update
   const posVotUp = {
     article_id: 3,
@@ -168,6 +155,25 @@ describe("PATCH /api/articles/:article_id", () => {
       .expect(404)
       .then(({ body: { msg } }) => {
         expect(msg).toBe("No article found for Article ID: 999999999");
+      });
+  });
+});
+
+xdescribe("GET /api/users", () => {
+  test("Status: 200 - responds with an array of at least 4 user objects, each having a 'username' property", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body: { users } }) => {
+        expect(users).toBeInstanceOf(Array);
+        expect(users).toHaveLength(4);
+        users.forEach(user => {
+          expect(user).toEqual(
+            expect.objectContaining({
+              username: expect.any(String),
+            })
+          );
+        });
       });
   });
 });
